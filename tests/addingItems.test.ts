@@ -30,25 +30,56 @@ describe('Adding items to smart fridge', () => {
   let fridge: SmartFridge;
 
   beforeAll(() => {
-    fridge = new SmartFridge([]);
+
     jest.useFakeTimers();
   });
 
-  it(
+  describe(
     'when an item is added, the fridge captures information about that item',
     () => {
-      // given, when
-      setCurrentDate('18/10/2021');
-      itemAdded({ name: 'Milk', expiry: '21/10/21' });
+      it(
+        'empty fridge',
+        () => {
+          // given
+          fridge = new SmartFridge([]);
 
-      setCurrentDate('01/01/2022');
-      itemAdded({ name: 'Cheese', expiry: '18/01/22' });
+          // when
+          setCurrentDate('18/10/2021');
+          itemAdded({ name: 'Milk', expiry: '21/10/21' });
 
-      // then
-      expect(fridge.itemsInFridge).toEqual([
-        { name: 'Milk', expiry: '21/10/21', addedAt: '18/10/2021' },
-        { name: 'Cheese', expiry: '18/01/22', addedAt: '01/01/2022' },
-      ]);
+          setCurrentDate('01/01/2022');
+          itemAdded({ name: 'Cheese', expiry: '18/01/22' });
+
+          // then
+          expect(fridge.itemsInFridge).toEqual([
+            { name: 'Milk', expiry: '21/10/21', addedAt: '18/10/2021' },
+            { name: 'Cheese', expiry: '18/01/22', addedAt: '01/01/2022' },
+          ]);
+        }
+      );
+      it(
+        'fridge with items',
+        () => {
+          // given
+          fridge = new SmartFridge([
+            { name: 'Bacon', expiry: '22/10/21', addedAt: '16/10/2021' }
+          ]);
+
+          // when
+          setCurrentDate('18/10/2021');
+          itemAdded({ name: 'Milk', expiry: '21/10/21' });
+
+          setCurrentDate('01/01/2022');
+          itemAdded({ name: 'Cheese', expiry: '18/01/22' });
+
+          // then
+          expect(fridge.itemsInFridge).toEqual([
+            { name: 'Bacon', expiry: '22/10/21', addedAt: '16/10/2021' },
+            { name: 'Milk', expiry: '21/10/21', addedAt: '18/10/2021' },
+            { name: 'Cheese', expiry: '18/01/22', addedAt: '01/01/2022' },
+          ]);
+        }
+      );
     }
   );
 
