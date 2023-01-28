@@ -1,15 +1,15 @@
 import { format } from 'date-fns';
 import parse from 'date-fns/parse';
+import { EventEmitter } from 'events';
 
 const DATE_FORMAT = 'dd/MM/yyyy';
 
+enum SmartFridgeEvent {
+  ItemAdded = 'ItemAdded'
+}
+
 describe('Adding items to smart fridge', () => {
   interface ItemToAdd {
-    name: string;
-    expiry: string;
-  }
-
-  interface ItemInFridge {
     name: string;
     expiry: string;
   }
@@ -20,29 +20,60 @@ describe('Adding items to smart fridge', () => {
     addedAt: string;
   }
 
-  interface FridgeEvent<TPayload = unknown> {
+  interface ItemInFridgeDbEntity {
     name: string;
+    expiry: string;
+    addedAt: Date;
+  }
+
+  interface FridgeEvent<TPayload = unknown> {
+    name: SmartFridgeEvent;
     payload: TPayload;
     timestamp: Date;
   }
 
+  type FridgeItemsRepository = ItemInFridgeDbEntity[];
+
+
+  const Subscription = (
+    EVENT_BUS = new EventEmitter(),
+    EVENT_STORE: FridgeEvent[] = [],
+    FRIDGE_ITEMS_REPOSITORY: FridgeItemsRepository = []
+  ) => {
+
+    EVENT_BUS.on(
+      SmartFridgeEvent.ItemAdded,
+      (event: FridgeEvent<ItemToAdd>) => {
+        EVENT_STORE.push(event);
+
+        FRIDGE_ITEMS_REPOSITORY.push({
+          ...event.payload,
+          addedAt: event.timestamp
+        });
+      }
+    );
+  };
+
+
+
   class SmartFridge {
     constructor(
-      private readonly eventStore: FridgeEvent<ItemInFridge>[] = []
+      private readonly eventBus: EventEmitter,
+      private readonly fridgeItemsRepository: FridgeItemsRepository
     ) {}
 
     get itemsInFridge(): ItemInFridgeDto[] {
-      return this.eventStore.map((e: FridgeEvent<ItemInFridge>) => ({
-        ...e.payload,
-        addedAt: format(e.timestamp, DATE_FORMAT)
+      return this.fridgeItemsRepository.map(item => ({
+        ...item,
+        addedAt: format(item.addedAt, DATE_FORMAT)
       }));
     }
 
     async addItem(item: ItemToAdd) {
-      this.eventStore.push({
-        name: 'ItemAdded',
+      this.eventBus.emit(SmartFridgeEvent.ItemAdded, {
+        name: SmartFridgeEvent.ItemAdded,
         payload: item,
-        timestamp: new Date()
+        timestamp: new Date(),
       });
     }
   }
@@ -61,7 +92,11 @@ describe('Adding items to smart fridge', () => {
         'empty fridge',
         () => {
           // given
-          fridge = new SmartFridge([]);
+          const eventBus = new EventEmitter();
+          const fridgeItemsRepository: FridgeItemsRepository = [];
+          Subscription(eventBus, [], fridgeItemsRepository);
+
+          fridge = new SmartFridge(eventBus, fridgeItemsRepository);
 
           // when
           setCurrentDate('18/10/2021');
@@ -77,21 +112,21 @@ describe('Adding items to smart fridge', () => {
           ]);
         }
       );
+
+      // TODO: what if event store and state db do not equal?
       it(
         'fridge with items',
         () => {
           // given
-          setCurrentDate('16/10/2021');
-          fridge = new SmartFridge([
-            {
-              payload: {
-                name: 'Bacon',
-                expiry: '22/10/21',
-              },
-              name: 'ItemAdded',
-              timestamp: new Date()
-            }
-          ]);
+          const eventBus = new EventEmitter();
+          const fridgeItemsRepository: FridgeItemsRepository = [{
+            name: 'Bacon',
+            expiry: '22/10/21',
+            addedAt: new Date(2021, 9, 16)
+          }];
+          Subscription(eventBus, [], fridgeItemsRepository);
+
+          fridge = new SmartFridge(eventBus, fridgeItemsRepository);
 
           // when
           setCurrentDate('18/10/2021');
