@@ -12,17 +12,37 @@ describe('Adding items to smart fridge', () => {
   interface ItemInFridge {
     name: string;
     expiry: string;
-    // TODO: this should be stored as a date, string formatting only for display
+  }
+
+  interface ItemInFridgeDto {
+    name: string;
+    expiry: string;
     addedAt: string;
   }
 
+  interface FridgeEvent<TPayload = unknown> {
+    name: string;
+    payload: TPayload;
+    timestamp: Date;
+  }
+
   class SmartFridge {
-    constructor(public readonly itemsInFridge: ItemInFridge[]) {}
+    constructor(
+      private readonly eventStore: FridgeEvent<ItemInFridge>[] = []
+    ) {}
+
+    get itemsInFridge(): ItemInFridgeDto[] {
+      return this.eventStore.map((e: FridgeEvent<ItemInFridge>) => ({
+        ...e.payload,
+        addedAt: format(e.timestamp, DATE_FORMAT)
+      }));
+    }
 
     async addItem(item: ItemToAdd) {
-      this.itemsInFridge.push({
-        ...item,
-        addedAt: format(new Date(), DATE_FORMAT)
+      this.eventStore.push({
+        name: 'ItemAdded',
+        payload: item,
+        timestamp: new Date()
       });
     }
   }
@@ -61,8 +81,16 @@ describe('Adding items to smart fridge', () => {
         'fridge with items',
         () => {
           // given
+          setCurrentDate('16/10/2021');
           fridge = new SmartFridge([
-            { name: 'Bacon', expiry: '22/10/21', addedAt: '16/10/2021' }
+            {
+              payload: {
+                name: 'Bacon',
+                expiry: '22/10/21',
+              },
+              name: 'ItemAdded',
+              timestamp: new Date()
+            }
           ]);
 
           // when
@@ -94,3 +122,6 @@ describe('Adding items to smart fridge', () => {
   }
 });
 
+// TODO: scenarios
+// duplicate item? prevent to ensure correct calculation of expiry date
+// restore fridge items from events
