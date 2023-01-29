@@ -3,6 +3,8 @@ import parse from 'date-fns/parse';
 
 const DATE_FORMAT = 'dd/MM/yyyy';
 
+type FridgeEventName = 'ItemAdded'
+
 describe('Adding items to smart fridge', () => {
   interface ItemToAdd {
     name: string;
@@ -21,7 +23,7 @@ describe('Adding items to smart fridge', () => {
   }
 
   interface FridgeEvent<TPayload = unknown> {
-    name: string;
+    name: FridgeEventName;
     payload: TPayload;
     timestamp: Date;
   }
@@ -38,12 +40,10 @@ describe('Adding items to smart fridge', () => {
       }));
     }
 
-    async addItem(item: ItemToAdd) {
-      this.eventStore.push({
-        name: 'ItemAdded',
-        payload: item,
-        timestamp: new Date()
-      });
+    handle(event: FridgeEvent) {
+      if (event.name === 'ItemAdded') {
+        this.eventStore.push(event as FridgeEvent<ItemToAdd>);
+      }
     }
   }
 
@@ -118,10 +118,12 @@ describe('Adding items to smart fridge', () => {
   }
 
   function itemAdded(_payload: { name: string; expiry: string }) {
-    fridge.addItem(_payload);
+    fridge.handle({
+      name: 'ItemAdded',
+      timestamp: new Date(), payload: _payload
+    });
   }
 });
 
 // TODO: scenarios
 // duplicate item? prevent to ensure correct calculation of expiry date
-// restore fridge items from events
