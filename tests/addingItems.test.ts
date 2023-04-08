@@ -1,6 +1,6 @@
 import parse from 'date-fns/parse';
 
-import { DATE_FORMAT, SmartFridge } from '../src/SmartFridge';
+import { DATE_FORMAT, ItemAdded, SmartFridge } from '../src/SmartFridge';
 
 // TODO: scenarios
 // duplicate item? prevent to ensure correct calculation of expiry date
@@ -30,8 +30,16 @@ describe('Adding items to smart fridge', () => {
 
           // then
           expect(fridge.itemsInFridge).toEqual([
-            { name: 'Milk', expiry: '21/10/21', addedAt: '18/10/2021' },
-            { name: 'Cheese', expiry: '18/01/22', addedAt: '01/01/2022' },
+            {
+              name: 'Milk',
+              expiry: '2021-10-20T22:00:00.000Z',
+              addedAt: '2021-10-17T22:00:00.000Z'
+            },
+            {
+              name: 'Cheese',
+              expiry: '2022-01-17T23:00:00.000Z',
+              addedAt: '2021-12-31T23:00:00.000Z'
+            },
           ]);
         }
       );
@@ -59,11 +67,21 @@ describe('Adding items to smart fridge', () => {
           itemAdded({ name: 'Cheese', expiry: '18/01/22' });
 
           // then
-          expect(fridge.itemsInFridge).toEqual([
-            { name: 'Bacon', expiry: '22/10/21', addedAt: '16/10/2021' },
-            { name: 'Milk', expiry: '21/10/21', addedAt: '18/10/2021' },
-            { name: 'Cheese', expiry: '18/01/22', addedAt: '01/01/2022' },
-          ]);
+          expect(fridge.itemsInFridge).toEqual([{
+            addedAt: '2021-10-15T22:00:00.000Z',
+            expiry: '22/10/21',
+            name: 'Bacon'
+          },
+          {
+            addedAt: '2021-10-17T22:00:00.000Z',
+            expiry: '2021-10-20T22:00:00.000Z',
+            name: 'Milk'
+          },
+          {
+            addedAt: '2021-12-31T23:00:00.000Z',
+            expiry: '2022-01-17T23:00:00.000Z',
+            name: 'Cheese'
+          }]);
         }
       );
     }
@@ -75,10 +93,7 @@ describe('Adding items to smart fridge', () => {
     jest.setSystemTime(date);
   }
 
-  function itemAdded(_payload: { name: string; expiry: string }) {
-    fridge.handle({
-      name: 'ItemAdded',
-      timestamp: new Date(), payload: _payload
-    });
+  function itemAdded(payload: { name: string; expiry: string }) {
+    fridge.handle(ItemAdded(payload));
   }
 });

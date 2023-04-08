@@ -1,4 +1,4 @@
-import { format } from 'date-fns';
+import { parse } from 'date-fns';
 
 export const DATE_FORMAT = 'dd/MM/yyyy';
 
@@ -9,7 +9,7 @@ interface ItemToAdd {
   expiry: string;
 }
 
-interface ItemInFridge {
+export interface ItemAddedPayload {
   name: string;
   expiry: string;
 }
@@ -26,21 +26,62 @@ interface FridgeEvent<TPayload = unknown> {
   timestamp: Date;
 }
 
+export const ItemAdded = (
+  payload: ItemAddedPayload
+): FridgeEvent<ItemAddedPayload> => ({
+  name: 'ItemAdded',
+  timestamp: new Date(),
+  payload: payload
+});
+
+const INPUT_FORMAT_STRING = 'dd/MM/yy';
+
+class ISODate {
+  public readonly value;
+
+  constructor(formatted: string) {
+    this.value = parse(
+      formatted,
+      INPUT_FORMAT_STRING,
+      new Date()
+    );
+  }
+
+  toString() {
+    return this.value.toISOString();
+  }
+}
+
 export class SmartFridge {
   constructor(
-    private readonly eventStore: FridgeEvent<ItemInFridge>[] = []
+    private readonly eventStore: FridgeEvent<ItemAddedPayload>[] = []
   ) {}
 
   get itemsInFridge(): ItemInFridgeDto[] {
-    return this.eventStore.map((e: FridgeEvent<ItemInFridge>) => ({
-      ...e.payload,
-      addedAt: format(e.timestamp, DATE_FORMAT)
-    }));
+    return this.eventStore.map(
+      ({ payload, timestamp }: FridgeEvent<ItemAddedPayload>) => {
+        return ({
+          expiry: payload.expiry,
+          name: payload.name,
+          addedAt: timestamp.toISOString()
+        });
+      }
+    );
   }
 
   handle(event: FridgeEvent) {
     if (event.name === 'ItemAdded') {
-      this.eventStore.push(event as FridgeEvent<ItemToAdd>);
+      const itemAdded = event as FridgeEvent<ItemToAdd>;
+
+      this.eventStore.push({
+        ...itemAdded,
+        payload: {
+          ...itemAdded.payload,
+          expiry: new ISODate(
+            itemAdded.payload.expiry
+          ).toString()
+        }
+      });
     }
   }
 }
