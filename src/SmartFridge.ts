@@ -52,15 +52,14 @@ export const FridgeDoorOpened = (): FridgeEvent<void> => ({
 });
 
 
-const INPUT_FORMAT_STRING = 'dd/MM/yy';
-
 class ISODate {
+  private readonly INPUT_FORMAT = 'dd/MM/yy';
   public readonly value;
 
   constructor(formatted: string) {
     this.value = parse(
       formatted,
-      INPUT_FORMAT_STRING,
+      this.INPUT_FORMAT,
       new Date()
     );
   }
