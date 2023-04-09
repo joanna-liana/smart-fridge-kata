@@ -2,7 +2,15 @@ import { parse } from 'date-fns';
 
 export const DATE_FORMAT = 'dd/MM/yyyy';
 
-type FridgeEventName = 'ItemAdded';
+type FridgeEventName = 'ItemAdded' | 'FridgeDoorOpened';
+type ItemCondition = 'sealed' | 'opened';
+
+export interface ItemAddedPayload {
+  name: string;
+  expiry: string;
+  condition?: ItemCondition;
+}
+
 
 interface ItemToAdd {
   name: string;
@@ -33,6 +41,13 @@ export const ItemAdded = (
   timestamp: new Date(),
   payload: payload
 });
+
+export const FridgeDoorOpened = (): FridgeEvent<void> => ({
+  name: 'FridgeDoorOpened',
+  timestamp: new Date(),
+  payload: undefined
+});
+
 
 const INPUT_FORMAT_STRING = 'dd/MM/yy';
 
