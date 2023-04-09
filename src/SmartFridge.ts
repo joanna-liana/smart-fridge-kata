@@ -1,4 +1,4 @@
-import { parse } from 'date-fns';
+import { parse, subHours } from 'date-fns';
 
 export const DATE_FORMAT = 'dd/MM/yyyy';
 
@@ -69,12 +69,15 @@ class ISODate {
 
 export class SmartFridge {
   constructor(
+    // TODO: fix the format of dates - ensure ISO strings
     private readonly eventStore: FridgeEvent<ItemAddedPayload>[] = []
   ) {}
 
+  // TODO: rename to just `items`
   get itemsInFridge(): ItemInFridgeDto[] {
     return this.eventStore.map(
       ({ payload, timestamp }: FridgeEvent<ItemAddedPayload>) => {
+        payload;
         return ({
           expiry: payload.expiry,
           name: payload.name,
@@ -96,6 +99,13 @@ export class SmartFridge {
             itemAdded.payload.expiry
           ).toString()
         }
+      });
+    }
+
+    if (event.name === 'FridgeDoorOpened') {
+      this.eventStore.forEach(item => {
+        item.payload.expiry = subHours(new Date(item.payload.expiry), 1)
+          .toISOString();
       });
     }
   }
