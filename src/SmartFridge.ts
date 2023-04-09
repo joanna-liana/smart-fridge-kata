@@ -100,6 +100,10 @@ export class SmartFridge {
     }
 
     if (event.name === 'FridgeDoorOpened') {
+      if (!this.isClosed) {
+        throw new Error('Cannot open an already opened fridge');
+      }
+
       this.eventStore.push(event as FridgeEvent<FridgeDoorOpenedPayload>);
 
       this.open();
