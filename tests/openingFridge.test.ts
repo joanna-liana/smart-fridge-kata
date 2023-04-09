@@ -1,8 +1,7 @@
 import {
   FridgeDoorOpened,
-  ItemAdded,
-  ItemAddedPayload,
-  SmartFridge
+  SmartFridge,
+  StoredItem
 } from '../src/SmartFridge';
 import { setCurrentDate } from './utils';
 
@@ -18,23 +17,24 @@ describe('Opening smart fridge', () => {
   beforeEach(() => {
     setCurrentDate('18/10/2021');
 
-    fridge = new SmartFridge();
+
   });
 
   describe(
     'degrades the expiry of the items in the fridge based on their condition',
     () => {
-      const EXPIRY_DATE = '22/10/21';
+      const EXPIRY_DATE = new Date(2021, 9, 22);
 
       it('sealed item - degraded by 1 hour', () => {
         // given
-        const sealedItem: ItemAddedPayload = {
+        const sealedItem: StoredItem = {
           name: 'Bacon',
           expiry: EXPIRY_DATE,
+          addedAt: new Date(),
           condition: 'sealed'
         };
 
-        fridge.handle(ItemAdded(sealedItem));
+        fridge = new SmartFridge([sealedItem]);
 
         expect(fridge.items).toEqual([{
           addedAt: '2021-10-17T22:00:00.000Z',
@@ -62,13 +62,14 @@ describe('Opening smart fridge', () => {
 
       it('opened item - degraded by 4 hours', () => {
         // given
-        const sealedItem: ItemAddedPayload = {
+        const openedItem: StoredItem = {
           name: 'Bacon',
           expiry: EXPIRY_DATE,
+          addedAt: new Date(),
           condition: 'opened'
         };
 
-        fridge.handle(ItemAdded(sealedItem));
+        fridge = new SmartFridge([openedItem]);
 
         expect(fridge.items).toEqual([{
           addedAt: '2021-10-17T22:00:00.000Z',
