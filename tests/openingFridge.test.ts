@@ -7,6 +7,7 @@ import {
 import { setCurrentDate } from './utils';
 
 // TODO: set timezone, check with GH actions
+// TODO: cannot open an already opened fridge
 describe('Opening smart fridge', () => {
   let fridge: SmartFridge;
 
