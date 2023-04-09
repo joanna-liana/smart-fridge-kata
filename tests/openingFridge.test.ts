@@ -97,6 +97,14 @@ describe('Opening smart fridge', () => {
     }
   );
 
+  it('does not open an already opened fridge', () => {
+    fridge = new SmartFridge();
+    fridgeDoorOpened();
+
+    expect(() => fridgeDoorOpened())
+      .toThrowError('Cannot open an already opened fridge');
+  });
+
   function fridgeDoorOpened() {
     fridge.handle(FridgeDoorOpened());
   }
