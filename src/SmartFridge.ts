@@ -11,15 +11,6 @@ export interface ItemAddedPayload {
   condition?: ItemCondition;
 }
 
-interface ItemToAdd {
-  name: string;
-  expiry: string;
-}
-
-export interface ItemAddedPayload {
-  name: string;
-  expiry: string;
-}
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface FridgeDoorOpenedPayload {
@@ -73,6 +64,7 @@ interface StoredItem {
   name: string;
   expiry: Date;
   addedAt: Date;
+  condition: ItemCondition;
 }
 
 export class SmartFridge {
@@ -87,7 +79,7 @@ export class SmartFridge {
 
   get items(): ItemInFridgeDto[] {
     return this.itemRepository.map(item => ({
-      ...item,
+      name: item.name,
       expiry: item.expiry.toISOString(),
       addedAt: item.addedAt.toISOString()
     }));
@@ -95,14 +87,15 @@ export class SmartFridge {
 
   handle(event: FridgeEvent) {
     if (event.name === 'ItemAdded') {
-      const itemAdded = event as FridgeEvent<ItemToAdd>;
+      const itemAdded = event as FridgeEvent<ItemAddedPayload>;
 
       this.eventStore.push(itemAdded);
 
       return this.itemRepository.push({
         expiry: new ISODate(itemAdded.payload.expiry).value,
         name: itemAdded.payload.name,
-        addedAt: itemAdded.timestamp
+        addedAt: itemAdded.timestamp,
+        condition: itemAdded.payload.condition ?? 'sealed'
       });
     }
 
@@ -110,7 +103,9 @@ export class SmartFridge {
       this.eventStore.push(event as FridgeEvent<FridgeDoorOpenedPayload>);
 
       this.itemRepository.forEach(item => {
-        item.expiry = subHours(new Date(item.expiry), 1);
+        const hoursToDegradeBy = item.condition === 'sealed' ? 1 : 4;
+
+        item.expiry = subHours(new Date(item.expiry), hoursToDegradeBy);
       });
     }
   }
