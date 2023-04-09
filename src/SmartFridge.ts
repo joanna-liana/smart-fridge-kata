@@ -68,6 +68,8 @@ interface StoredItem {
 }
 
 export class SmartFridge {
+  private isClosed = true;
+
   constructor(
     private readonly itemRepository: StoredItem[] = [],
     // TODO: fix the format of dates - ensure ISO strings
@@ -87,6 +89,10 @@ export class SmartFridge {
 
   handle(event: FridgeEvent) {
     if (event.name === 'ItemAdded') {
+      if (this.isClosed) {
+        throw new Error('Cannot add an item to a closed fridge');
+      }
+
       const itemAdded = event as FridgeEvent<ItemAddedPayload>;
 
       this.eventStore.push(itemAdded);
@@ -101,6 +107,8 @@ export class SmartFridge {
 
     if (event.name === 'FridgeDoorOpened') {
       this.eventStore.push(event as FridgeEvent<FridgeDoorOpenedPayload>);
+
+      this.isClosed = false;
 
       this.itemRepository.forEach(item => {
         const hoursToDegradeBy = item.condition === 'sealed' ? 1 : 4;
