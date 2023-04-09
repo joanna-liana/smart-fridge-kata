@@ -11,7 +11,6 @@ export interface ItemAddedPayload {
   condition?: ItemCondition;
 }
 
-
 interface ItemToAdd {
   name: string;
   expiry: string;
@@ -20,6 +19,10 @@ interface ItemToAdd {
 export interface ItemAddedPayload {
   name: string;
   expiry: string;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface FridgeDoorOpenedPayload {
 }
 
 interface ItemInFridgeDto {
@@ -67,45 +70,49 @@ class ISODate {
   }
 }
 
+interface StoredItem {
+  name: string;
+  expiry: Date;
+  addedAt: Date;
+}
+
 export class SmartFridge {
   constructor(
+    private readonly itemRepository: StoredItem[] = [],
     // TODO: fix the format of dates - ensure ISO strings
-    private readonly eventStore: FridgeEvent<ItemAddedPayload>[] = []
+    // TODO: events should be immutable
+    private readonly eventStore: FridgeEvent<
+      ItemAddedPayload | FridgeDoorOpenedPayload
+    >[] = [],
   ) {}
 
   // TODO: rename to just `items`
   get itemsInFridge(): ItemInFridgeDto[] {
-    return this.eventStore.map(
-      ({ payload, timestamp }: FridgeEvent<ItemAddedPayload>) => {
-        payload;
-        return ({
-          expiry: payload.expiry,
-          name: payload.name,
-          addedAt: timestamp.toISOString()
-        });
-      }
-    );
+    return this.itemRepository.map(item => ({
+      ...item,
+      expiry: item.expiry.toISOString(),
+      addedAt: item.addedAt.toISOString()
+    }));
   }
 
   handle(event: FridgeEvent) {
     if (event.name === 'ItemAdded') {
       const itemAdded = event as FridgeEvent<ItemToAdd>;
 
-      this.eventStore.push({
-        ...itemAdded,
-        payload: {
-          ...itemAdded.payload,
-          expiry: new ISODate(
-            itemAdded.payload.expiry
-          ).toString()
-        }
+      this.eventStore.push(itemAdded);
+
+      return this.itemRepository.push({
+        expiry: new ISODate(itemAdded.payload.expiry).value,
+        name: itemAdded.payload.name,
+        addedAt: itemAdded.timestamp
       });
     }
 
     if (event.name === 'FridgeDoorOpened') {
-      this.eventStore.forEach(item => {
-        item.payload.expiry = subHours(new Date(item.payload.expiry), 1)
-          .toISOString();
+      this.eventStore.push(event as FridgeEvent<FridgeDoorOpenedPayload>);
+
+      this.itemRepository.forEach(item => {
+        item.expiry = subHours(new Date(item.expiry), 1);
       });
     }
   }

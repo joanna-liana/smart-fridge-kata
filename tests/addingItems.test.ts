@@ -1,4 +1,4 @@
-import { ItemAdded, SmartFridge } from '../src/SmartFridge';
+import { ISODate, ItemAdded, SmartFridge } from '../src/SmartFridge';
 import { setCurrentDate } from './utils';
 
 // TODO: scenarios
@@ -49,12 +49,9 @@ describe('Adding items to smart fridge', () => {
           setCurrentDate('16/10/2021');
           fridge = new SmartFridge([
             {
-              payload: {
-                name: 'Bacon',
-                expiry: '22/10/21',
-              },
-              name: 'ItemAdded',
-              timestamp: new Date()
+              name: 'Bacon',
+              expiry: new Date(2021, 9, 22),
+              addedAt: new Date()
             }
           ]);
 
@@ -68,7 +65,7 @@ describe('Adding items to smart fridge', () => {
           // then
           expect(fridge.itemsInFridge).toEqual([{
             addedAt: '2021-10-15T22:00:00.000Z',
-            expiry: '22/10/21',
+            expiry: '2021-10-21T22:00:00.000Z',
             name: 'Bacon'
           },
           {
