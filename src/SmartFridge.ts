@@ -86,8 +86,7 @@ export class SmartFridge {
     >[] = [],
   ) {}
 
-  // TODO: rename to just `items`
-  get itemsInFridge(): ItemInFridgeDto[] {
+  get items(): ItemInFridgeDto[] {
     return this.itemRepository.map(item => ({
       ...item,
       expiry: item.expiry.toISOString(),

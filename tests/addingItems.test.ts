@@ -28,7 +28,7 @@ describe('Adding items to smart fridge', () => {
           itemAdded({ name: 'Cheese', expiry: '18/01/22' });
 
           // then
-          expect(fridge.itemsInFridge).toEqual([
+          expect(fridge.items).toEqual([
             {
               name: 'Milk',
               expiry: '2021-10-20T22:00:00.000Z',
@@ -63,7 +63,7 @@ describe('Adding items to smart fridge', () => {
           itemAdded({ name: 'Cheese', expiry: '18/01/22' });
 
           // then
-          expect(fridge.itemsInFridge).toEqual([{
+          expect(fridge.items).toEqual([{
             addedAt: '2021-10-15T22:00:00.000Z',
             expiry: '2021-10-21T22:00:00.000Z',
             name: 'Bacon'

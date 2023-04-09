@@ -35,7 +35,7 @@ describe('Opening smart fridge', () => {
 
         fridge.handle(ItemAdded(sealedItem));
 
-        expect(fridge.itemsInFridge).toEqual([{
+        expect(fridge.items).toEqual([{
           addedAt: '2021-10-17T22:00:00.000Z',
           expiry: '2021-10-21T22:00:00.000Z',
           name: 'Bacon'
@@ -44,7 +44,7 @@ describe('Opening smart fridge', () => {
         // when, then
         fridgeDoorOpened();
 
-        expect(fridge.itemsInFridge).toEqual([{
+        expect(fridge.items).toEqual([{
           addedAt: '2021-10-17T22:00:00.000Z',
           expiry: '2021-10-21T21:00:00.000Z',
           name: 'Bacon'
@@ -52,7 +52,7 @@ describe('Opening smart fridge', () => {
 
         fridgeDoorOpened();
 
-        expect(fridge.itemsInFridge).toEqual([{
+        expect(fridge.items).toEqual([{
           addedAt: '2021-10-17T22:00:00.000Z',
           expiry: '2021-10-21T20:00:00.000Z',
           name: 'Bacon'
