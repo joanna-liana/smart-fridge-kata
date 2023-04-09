@@ -58,6 +58,40 @@ describe('Opening smart fridge', () => {
           name: 'Bacon'
         }]);
       });
+
+      it('opened item - degraded by 4 hours', () => {
+        // given
+        const sealedItem: ItemAddedPayload = {
+          name: 'Bacon',
+          expiry: EXPIRY_DATE,
+          condition: 'opened'
+        };
+
+        fridge.handle(ItemAdded(sealedItem));
+
+        expect(fridge.items).toEqual([{
+          addedAt: '2021-10-17T22:00:00.000Z',
+          expiry: '2021-10-21T22:00:00.000Z',
+          name: 'Bacon'
+        }]);
+
+        // when, then
+        fridgeDoorOpened();
+
+        expect(fridge.items).toEqual([{
+          addedAt: '2021-10-17T22:00:00.000Z',
+          expiry: '2021-10-21T18:00:00.000Z',
+          name: 'Bacon'
+        }]);
+
+        fridgeDoorOpened();
+
+        expect(fridge.items).toEqual([{
+          addedAt: '2021-10-17T22:00:00.000Z',
+          expiry: '2021-10-21T14:00:00.000Z',
+          name: 'Bacon'
+        }]);
+      });
     }
   );
 
