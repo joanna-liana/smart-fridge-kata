@@ -1,6 +1,5 @@
-import parse from 'date-fns/parse';
-
-import { DATE_FORMAT, ItemAdded, SmartFridge } from '../src/SmartFridge';
+import { ItemAdded, SmartFridge } from '../src/SmartFridge';
+import { setCurrentDate } from './utils';
 
 // TODO: scenarios
 // duplicate item? prevent to ensure correct calculation of expiry date
@@ -86,12 +85,6 @@ describe('Adding items to smart fridge', () => {
       );
     }
   );
-
-  function setCurrentDate(_payload: string) {
-    const date = parse(_payload, DATE_FORMAT, new Date());
-
-    jest.setSystemTime(date);
-  }
 
   function itemAdded(payload: { name: string; expiry: string }) {
     fridge.handle(ItemAdded(payload));
