@@ -1,8 +1,9 @@
-import { ISODate, ItemAdded, SmartFridge } from '../src/SmartFridge';
+import { ItemAdded, SmartFridge } from '../src/SmartFridge';
 import { setCurrentDate } from './utils';
 
 // TODO: scenarios
 // duplicate item? prevent to ensure correct calculation of expiry date
+// TODO: should you be able to add an item before opening the fridge first?
 describe('Adding items to smart fridge', () => {
   let fridge: SmartFridge;
 
@@ -51,7 +52,8 @@ describe('Adding items to smart fridge', () => {
             {
               name: 'Bacon',
               expiry: new Date(2021, 9, 22),
-              addedAt: new Date()
+              addedAt: new Date(),
+              condition: 'sealed'
             }
           ]);
 
