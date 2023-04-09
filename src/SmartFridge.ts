@@ -72,7 +72,6 @@ export class SmartFridge {
 
   constructor(
     private readonly itemRepository: StoredItem[] = [],
-    // TODO: fix the format of dates - ensure ISO strings
     // TODO: events should be immutable
     private readonly eventStore: FridgeEvent<
       ItemAddedPayload | FridgeDoorOpenedPayload
