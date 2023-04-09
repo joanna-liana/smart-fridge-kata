@@ -60,7 +60,7 @@ class ISODate {
   }
 }
 
-interface StoredItem {
+export interface StoredItem {
   name: string;
   expiry: Date;
   addedAt: Date;
@@ -97,24 +97,35 @@ export class SmartFridge {
 
       this.eventStore.push(itemAdded);
 
-      return this.itemRepository.push({
-        expiry: new ISODate(itemAdded.payload.expiry).value,
-        name: itemAdded.payload.name,
-        addedAt: itemAdded.timestamp,
-        condition: itemAdded.payload.condition ?? 'sealed'
-      });
+      return this.addItem(itemAdded);
     }
 
     if (event.name === 'FridgeDoorOpened') {
       this.eventStore.push(event as FridgeEvent<FridgeDoorOpenedPayload>);
 
-      this.isClosed = false;
-
-      this.itemRepository.forEach(item => {
-        const hoursToDegradeBy = item.condition === 'sealed' ? 1 : 4;
-
-        item.expiry = subHours(new Date(item.expiry), hoursToDegradeBy);
-      });
+      this.open();
+      this.downgradeItemExpiry();
     }
+  }
+
+  private addItem(itemAdded: FridgeEvent<ItemAddedPayload>) {
+    return this.itemRepository.push({
+      expiry: new ISODate(itemAdded.payload.expiry).value,
+      name: itemAdded.payload.name,
+      addedAt: itemAdded.timestamp,
+      condition: itemAdded.payload.condition ?? 'sealed'
+    });
+  }
+
+  private downgradeItemExpiry() {
+    this.itemRepository.forEach(item => {
+      const hoursToDegradeBy = item.condition === 'sealed' ? 1 : 4;
+
+      item.expiry = subHours(new Date(item.expiry), hoursToDegradeBy);
+    });
+  }
+
+  private open() {
+    this.isClosed = false;
   }
 }
