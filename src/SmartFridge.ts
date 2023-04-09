@@ -77,7 +77,7 @@ export interface StoredItem {
   condition: ItemCondition;
 }
 
-class BaseSmartFridge {
+abstract class SmartFridgeState {
   constructor(
     protected readonly itemRepository: StoredItem[] = [],
   ) {}
@@ -89,9 +89,11 @@ class BaseSmartFridge {
       addedAt: item.addedAt.toISOString()
     }));
   }
+
+  abstract handle(event: FridgeEvent): void;
 }
 
-class OpenedSmartFridge extends BaseSmartFridge {
+class OpenedSmartFridge extends SmartFridgeState {
   handle(event: FridgeEvent) {
     if (event.name === 'ItemAdded') {
       const itemAdded = event as FridgeEvent<ItemAddedPayload>;
@@ -110,7 +112,7 @@ class OpenedSmartFridge extends BaseSmartFridge {
   }
 }
 
-class ClosedSmartFridge extends BaseSmartFridge {
+class ClosedSmartFridge extends SmartFridgeState {
   handle(event: FridgeEvent) {
     if (event.name === 'FridgeDoorOpened') {
       this.downgradeItemExpiry();
