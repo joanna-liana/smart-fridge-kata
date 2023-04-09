@@ -2,7 +2,7 @@ import { parse, subHours } from 'date-fns';
 
 export const DATE_FORMAT = 'dd/MM/yyyy';
 
-type FridgeEventName = 'ItemAdded' | 'FridgeDoorOpened';
+type FridgeEventName = 'ItemAdded' | 'FridgeDoorOpened' | 'FridgeDoorClosed';
 type ItemCondition = 'sealed' | 'opened';
 
 export interface ItemAddedPayload {
@@ -14,6 +14,10 @@ export interface ItemAddedPayload {
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface FridgeDoorOpenedPayload {
+}
+
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface FridgeDoorClosedPayload {
 }
 
 interface ItemInFridgeDto {
@@ -38,6 +42,12 @@ export const ItemAdded = (
 
 export const FridgeDoorOpened = (): FridgeEvent<void> => ({
   name: 'FridgeDoorOpened',
+  timestamp: new Date(),
+  payload: undefined
+});
+
+export const FridgeDoorClosed = (): FridgeEvent<void> => ({
+  name: 'FridgeDoorClosed',
   timestamp: new Date(),
   payload: undefined
 });
@@ -109,6 +119,12 @@ export class SmartFridge {
       this.open();
       this.downgradeItemExpiry();
     }
+
+    if (event.name === 'FridgeDoorClosed') {
+      this.eventStore.push(event as FridgeEvent<FridgeDoorClosedPayload>);
+
+      this.close();
+    }
   }
 
   private addItem(itemAdded: FridgeEvent<ItemAddedPayload>) {
@@ -130,5 +146,9 @@ export class SmartFridge {
 
   private open() {
     this.isClosed = false;
+  }
+
+  private close() {
+    this.isClosed = true;
   }
 }

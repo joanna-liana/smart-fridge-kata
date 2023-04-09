@@ -1,4 +1,5 @@
 import {
+  FridgeDoorClosed,
   FridgeDoorOpened,
   SmartFridge,
   StoredItem
@@ -6,7 +7,6 @@ import {
 import { setCurrentDate } from './utils';
 
 // TODO: set timezone, check with GH actions
-// TODO: cannot open an already opened fridge
 describe('Opening smart fridge', () => {
   let fridge: SmartFridge;
 
@@ -16,8 +16,6 @@ describe('Opening smart fridge', () => {
 
   beforeEach(() => {
     setCurrentDate('18/10/2021');
-
-
   });
 
   describe(
@@ -51,6 +49,7 @@ describe('Opening smart fridge', () => {
           name: 'Bacon'
         }]);
 
+        fridgeDoorClosed();
         fridgeDoorOpened();
 
         expect(fridge.items).toEqual([{
@@ -86,6 +85,7 @@ describe('Opening smart fridge', () => {
           name: 'Bacon'
         }]);
 
+        fridgeDoorClosed();
         fridgeDoorOpened();
 
         expect(fridge.items).toEqual([{
@@ -107,5 +107,9 @@ describe('Opening smart fridge', () => {
 
   function fridgeDoorOpened() {
     fridge.handle(FridgeDoorOpened());
+  }
+
+  function fridgeDoorClosed() {
+    fridge.handle(FridgeDoorClosed());
   }
 });
