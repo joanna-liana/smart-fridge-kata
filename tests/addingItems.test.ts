@@ -85,6 +85,16 @@ describe('Adding items to smart fridge', () => {
     }
   );
 
+  it('an item cannot be added without opening the fridge first', () => {
+    fridge = new SmartFridge([]);
+
+    expect(
+      () => itemAdded({ name: 'Cheese', expiry: '18/01/22' })
+    ).toThrowError('Cannot add an item to a closed fridge');
+
+    expect(fridge.items).toEqual([]);
+  });
+
   function itemAdded(payload: { name: string; expiry: string }) {
     fridge.handle(ItemAdded(payload));
   }
