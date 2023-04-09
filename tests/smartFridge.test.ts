@@ -1,3 +1,5 @@
+import { setCurrentDate } from './utils';
+
 describe('Smart fridge acceptance test', () => {
   let fridgeDisplay: string;
 
@@ -53,9 +55,6 @@ Cheese: 31 days remaining`);
   });
 });
 
-function setCurrentDate(_payload: string) {
-  throw new Error('Function not implemented.');
-}
 
 function fridgeDoorOpened() {
   throw new Error('Function not implemented.');
