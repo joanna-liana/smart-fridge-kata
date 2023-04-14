@@ -90,16 +90,22 @@ abstract class SmartFridgeState {
     }));
   }
 
-  abstract handle(event: FridgeEvent): void;
+  abstract handle(event: FridgeEvent): SmartFridgeState;
 }
 
 class OpenedSmartFridge extends SmartFridgeState {
   handle(event: FridgeEvent) {
+    if (event.name === 'FridgeDoorClosed') {
+      return new ClosedSmartFridge(this.itemRepository);
+    }
+
     if (event.name === 'ItemAdded') {
       const itemAdded = event as FridgeEvent<ItemAddedPayload>;
 
-      return this.addItem(itemAdded);
+      this.addItem(itemAdded);
     }
+
+    return this;
   }
 
   private addItem(itemAdded: FridgeEvent<ItemAddedPayload>) {
@@ -117,6 +123,8 @@ class ClosedSmartFridge extends SmartFridgeState {
     if (event.name === 'FridgeDoorOpened') {
       this.downgradeItemExpiry();
     }
+
+    return new OpenedSmartFridge(this.itemRepository);
   }
 
   private downgradeItemExpiry() {
@@ -128,15 +136,28 @@ class ClosedSmartFridge extends SmartFridgeState {
   }
 }
 
+type SupportedEvent = FridgeEvent<ItemAddedPayload | FridgeDoorOpenedPayload>;
+
 export class SmartFridge {
   private fridge: OpenedSmartFridge | ClosedSmartFridge;
+  private readonly preconditionByEvent: Record<FridgeEventName, () => void> = {
+    FridgeDoorClosed: () => true,
+    ItemAdded: () => {
+      if (this.fridge instanceof ClosedSmartFridge) {
+        throw new Error('Cannot add an item to a closed fridge');
+      }
+    },
+    FridgeDoorOpened: () => {
+      if (this.fridge instanceof OpenedSmartFridge) {
+        throw new Error('Cannot open an already opened fridge');
+      }
+    }
+  };
 
   constructor(
     private readonly itemRepository: StoredItem[] = [],
     // TODO: events should be immutable
-    private readonly eventStore: FridgeEvent<
-      ItemAddedPayload | FridgeDoorOpenedPayload
-    >[] = [],
+    private readonly eventStore: SupportedEvent[] = [],
   ) {
     this.fridge = new ClosedSmartFridge(this.itemRepository);
   }
@@ -146,41 +167,16 @@ export class SmartFridge {
   }
 
   handle(event: FridgeEvent) {
-    if (event.name === 'ItemAdded') {
-      // TODO: precondition
-      if (this.fridge instanceof ClosedSmartFridge) {
-        throw new Error('Cannot add an item to a closed fridge');
-      }
+    const handledEvents = Object.keys(this.preconditionByEvent);
 
-      this.eventStore.push(event as FridgeEvent<ItemAddedPayload>);
-
-      this.fridge.handle(event);
+    if (!handledEvents.includes(event.name)) {
+      return;
     }
 
-    if (event.name === 'FridgeDoorOpened') {
-      if (this.fridge instanceof OpenedSmartFridge) {
-        throw new Error('Cannot open an already opened fridge');
-      }
+    this.preconditionByEvent[event.name]();
 
-      this.eventStore.push(event as FridgeEvent<FridgeDoorOpenedPayload>);
+    this.eventStore.push(event as SupportedEvent);
 
-      this.fridge.handle(event);
-      this.open();
-    }
-
-    if (event.name === 'FridgeDoorClosed') {
-      this.eventStore.push(event as FridgeEvent<FridgeDoorClosedPayload>);
-
-      this.close();
-    }
-  }
-
-  // TODO: handle from within state fridge
-  private open() {
-    this.fridge = new OpenedSmartFridge(this.itemRepository);
-  }
-
-  private close() {
-    this.fridge = new ClosedSmartFridge(this.itemRepository);
+    this.fridge = this.fridge.handle(event);
   }
 }
