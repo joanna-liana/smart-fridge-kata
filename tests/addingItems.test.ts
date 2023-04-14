@@ -1,13 +1,13 @@
-import { FridgeDoorOpened, ItemAdded, SmartFridge } from '../src/SmartFridge';
-import { setCurrentDate } from './utils';
+import { SmartFridge } from '../src/SmartFridge';
+import { FridgeTestActions, setCurrentDate, testActionsFor } from './utils';
 
 // TODO: scenarios
 // duplicate item? prevent to ensure correct calculation of expiry date
 describe('Adding items to smart fridge', () => {
   let fridge: SmartFridge;
+  let _: FridgeTestActions;
 
   beforeAll(() => {
-
     jest.useFakeTimers();
   });
 
@@ -19,15 +19,16 @@ describe('Adding items to smart fridge', () => {
         () => {
           // given
           fridge = new SmartFridge([]);
+          _ = testActionsFor(fridge);
 
-          fridgeDoorOpened();
+          _.fridgeDoorOpened();
 
           // when
           setCurrentDate('18/10/2021');
-          itemAdded({ name: 'Milk', expiry: '21/10/21' });
+          _.itemAdded({ name: 'Milk', expiry: '21/10/21' });
 
           setCurrentDate('01/01/2022');
-          itemAdded({ name: 'Cheese', expiry: '18/01/22' });
+          _.itemAdded({ name: 'Cheese', expiry: '18/01/22' });
 
           // then
           expect(fridge.items).toEqual([
@@ -57,15 +58,16 @@ describe('Adding items to smart fridge', () => {
               condition: 'sealed'
             }
           ]);
+          _ = testActionsFor(fridge);
 
-          fridgeDoorOpened();
+          _.fridgeDoorOpened();
 
           // when
           setCurrentDate('18/10/2021');
-          itemAdded({ name: 'Milk', expiry: '21/10/21' });
+          _.itemAdded({ name: 'Milk', expiry: '21/10/21' });
 
           setCurrentDate('01/01/2022');
-          itemAdded({ name: 'Cheese', expiry: '18/01/22' });
+          _.itemAdded({ name: 'Cheese', expiry: '18/01/22' });
 
           // then
           expect(fridge.items).toEqual([
@@ -90,20 +92,12 @@ describe('Adding items to smart fridge', () => {
 
   it('an item cannot be added without opening the fridge first', () => {
     fridge = new SmartFridge([]);
+    _ = testActionsFor(fridge);
 
     expect(
-      () => itemAdded({ name: 'Cheese', expiry: '18/01/22' })
+      () => _.itemAdded({ name: 'Cheese', expiry: '18/01/22' })
     ).toThrowError('Cannot add an item to a closed fridge');
 
     expect(fridge.items).toEqual([]);
   });
-
-  // TODO: fridge test utils
-  function itemAdded(payload: { name: string; expiry: string }) {
-    fridge.handle(ItemAdded(payload));
-  }
-
-  function fridgeDoorOpened() {
-    fridge.handle(FridgeDoorOpened());
-  }
 });

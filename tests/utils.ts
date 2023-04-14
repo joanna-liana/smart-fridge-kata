@@ -4,6 +4,7 @@ import {
   DATE_FORMAT,
   FridgeDoorClosed,
   FridgeDoorOpened,
+  ItemAdded,
   SmartFridge
 } from '../src/SmartFridge';
 
@@ -13,14 +14,21 @@ export function setCurrentDate(_payload: string) {
   jest.setSystemTime(date);
 }
 
+interface ItemAddedPayload {
+  name: string;
+  expiry: string;
+}
+
 export interface FridgeTestActions {
   fridgeDoorOpened: () => void;
   fridgeDoorClosed: () => void;
+  itemAdded: (payload: ItemAddedPayload) => void;
 }
 
 export function testActionsFor(fridge: SmartFridge) {
   return {
     fridgeDoorOpened: () => fridge.handle(FridgeDoorOpened()),
-    fridgeDoorClosed: () => fridge.handle(FridgeDoorClosed())
+    fridgeDoorClosed: () => fridge.handle(FridgeDoorClosed()),
+    itemAdded: (payload: ItemAddedPayload) => fridge.handle(ItemAdded(payload))
   };
 }
