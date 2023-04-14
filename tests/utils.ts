@@ -1,10 +1,11 @@
-import parse from 'date-fns/parse';
+import { addDays, parse } from 'date-fns';
 
 import {
   DATE_FORMAT,
   FridgeDoorClosed,
   FridgeDoorOpened,
   ItemAdded,
+  ItemAddedPayload,
   SmartFridge
 } from '../src/SmartFridge';
 
@@ -14,9 +15,10 @@ export function setCurrentDate(_payload: string) {
   jest.setSystemTime(date);
 }
 
-interface ItemAddedPayload {
-  name: string;
-  expiry: string;
+export function dayOver() {
+  const nextDay = addDays(new Date(), 1);
+
+  jest.setSystemTime(nextDay);
 }
 
 export interface FridgeTestActions {
