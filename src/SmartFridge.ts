@@ -141,7 +141,11 @@ type SupportedEvent = FridgeEvent<ItemAddedPayload | FridgeDoorOpenedPayload>;
 export class SmartFridge {
   private fridge: OpenedSmartFridge | ClosedSmartFridge;
   private readonly preconditionByEvent: Record<FridgeEventName, () => void> = {
-    FridgeDoorClosed: () => true,
+    FridgeDoorClosed: () => {
+      if (this.fridge instanceof ClosedSmartFridge) {
+        throw new Error('Cannot close an already closed fridge');
+      }
+    },
     ItemAdded: () => {
       if (this.fridge instanceof ClosedSmartFridge) {
         throw new Error('Cannot add an item to a closed fridge');
