@@ -1,4 +1,4 @@
-import { SmartFridge } from '../src/SmartFridge';
+import { SmartFridge } from '../src/fridge/SmartFridge';
 import { FridgeTestActions, testActionsFor } from './utils';
 
 describe('Closing a smart fridge', () => {

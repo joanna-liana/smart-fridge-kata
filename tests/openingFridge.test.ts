@@ -1,7 +1,7 @@
 import {
   SmartFridge,
   StoredItem
-} from '../src/SmartFridge';
+} from '../src/fridge/SmartFridge';
 import { FridgeTestActions, setCurrentDate, testActionsFor } from './utils';
 
 // TODO: set timezone, check with GH actions

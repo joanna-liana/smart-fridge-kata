@@ -1,4 +1,4 @@
-import { SmartFridge } from '../src/SmartFridge';
+import { SmartFridge } from '../src/fridge/SmartFridge';
 import { FridgeTestActions, setCurrentDate, testActionsFor } from './utils';
 
 // TODO: scenarios
