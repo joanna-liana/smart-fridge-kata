@@ -1,27 +1,26 @@
 import {
-  FridgeDoorClosed,
-  FridgeDoorOpened,
   SmartFridge,
   StoredItem
 } from '../src/SmartFridge';
-import { setCurrentDate } from './utils';
+import { FridgeTestActions, setCurrentDate, testActionsFor } from './utils';
 
 // TODO: set timezone, check with GH actions
 describe('Opening smart fridge', () => {
   let fridge: SmartFridge;
+  let actions: FridgeTestActions;
 
   beforeAll(() => {
     jest.useFakeTimers();
-  });
-
-  beforeEach(() => {
-    setCurrentDate('18/10/2021');
   });
 
   describe(
     'degrades the expiry of the items in the fridge based on their condition',
     () => {
       const EXPIRY_DATE = new Date(2021, 9, 22);
+
+      beforeEach(() => {
+        setCurrentDate('18/10/2021');
+      });
 
       it('sealed item - degraded by 1 hour', () => {
         // given
@@ -33,6 +32,7 @@ describe('Opening smart fridge', () => {
         };
 
         fridge = new SmartFridge([sealedItem]);
+        actions = testActionsFor(fridge);
 
         expect(fridge.items).toEqual([{
           addedAt: '2021-10-17T22:00:00.000Z',
@@ -41,7 +41,7 @@ describe('Opening smart fridge', () => {
         }]);
 
         // when, then
-        fridgeDoorOpened();
+        actions.fridgeDoorOpened();
 
         expect(fridge.items).toEqual([{
           addedAt: '2021-10-17T22:00:00.000Z',
@@ -49,8 +49,8 @@ describe('Opening smart fridge', () => {
           name: 'Bacon'
         }]);
 
-        fridgeDoorClosed();
-        fridgeDoorOpened();
+        actions.fridgeDoorClosed();
+        actions.fridgeDoorOpened();
 
         expect(fridge.items).toEqual([{
           addedAt: '2021-10-17T22:00:00.000Z',
@@ -69,6 +69,7 @@ describe('Opening smart fridge', () => {
         };
 
         fridge = new SmartFridge([openedItem]);
+        actions = testActionsFor(fridge);
 
         expect(fridge.items).toEqual([{
           addedAt: '2021-10-17T22:00:00.000Z',
@@ -77,7 +78,7 @@ describe('Opening smart fridge', () => {
         }]);
 
         // when, then
-        fridgeDoorOpened();
+        actions.fridgeDoorOpened();
 
         expect(fridge.items).toEqual([{
           addedAt: '2021-10-17T22:00:00.000Z',
@@ -85,8 +86,8 @@ describe('Opening smart fridge', () => {
           name: 'Bacon'
         }]);
 
-        fridgeDoorClosed();
-        fridgeDoorOpened();
+        actions.fridgeDoorClosed();
+        actions.fridgeDoorOpened();
 
         expect(fridge.items).toEqual([{
           addedAt: '2021-10-17T22:00:00.000Z',
@@ -99,17 +100,10 @@ describe('Opening smart fridge', () => {
 
   it('does not open an already opened fridge', () => {
     fridge = new SmartFridge();
-    fridgeDoorOpened();
+    actions = testActionsFor(fridge);
+    actions.fridgeDoorOpened();
 
-    expect(() => fridgeDoorOpened())
+    expect(() => actions.fridgeDoorOpened())
       .toThrowError('Cannot open an already opened fridge');
   });
-
-  function fridgeDoorOpened() {
-    fridge.handle(FridgeDoorOpened());
-  }
-
-  function fridgeDoorClosed() {
-    fridge.handle(FridgeDoorClosed());
-  }
 });
