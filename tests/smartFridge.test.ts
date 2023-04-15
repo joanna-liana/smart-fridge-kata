@@ -7,7 +7,6 @@ import {
 } from './utils';
 
 describe('Smart fridge acceptance test', () => {
-  let fridgeDisplay: string;
   let fridge: SmartFridge;
   let _: FridgeTestActions;
 
@@ -39,7 +38,7 @@ describe('Smart fridge acceptance test', () => {
     _.fridgeDoorClosed();
 
     _.fridgeDoorOpened();
-    itemRemoved({ name: 'Milk' });
+    _.itemRemoved({ name: 'Milk' });
     _.fridgeDoorClosed();
 
     _.fridgeDoorOpened();
@@ -50,8 +49,8 @@ describe('Smart fridge acceptance test', () => {
     dayOver();
 
     _.fridgeDoorOpened();
-    itemRemoved({ name: 'Beef' });
-    itemRemoved({ name: 'Lettuce' });
+    _.itemRemoved({ name: 'Beef' });
+    _.itemRemoved({ name: 'Lettuce' });
     _.fridgeDoorClosed();
 
     _.fridgeDoorOpened();
@@ -64,14 +63,9 @@ describe('Smart fridge acceptance test', () => {
     dayOver();
 
     // then
-    expect(fridgeDisplay).toEqual(`EXPIRED: Milk
+    expect(fridge.display).toEqual(`EXPIRED: Milk
 Lettuce: 0 days remaining
 Peppers: 1 day remaining
 Cheese: 31 days remaining`);
   });
 });
-
-
-function itemRemoved(_payload: { name: string }) {
-  throw new Error('Function not implemented.');
-}
