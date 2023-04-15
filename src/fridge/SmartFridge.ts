@@ -83,7 +83,7 @@ type SupportedEvent = FridgeEvent<ItemAddedPayload | FridgeDoorOpenedPayload>;
 
 export class SmartFridge {
   private fridge: OpenedSmartFridge | ClosedSmartFridge;
-  private readonly preconditionByEvent: Record<FridgeEventName, () => void> = {
+  private readonly ensureValidStateToHandleEvent: Record<FridgeEventName, () => void> = {
     FridgeDoorClosed: () => {
       if (this.fridge instanceof ClosedSmartFridge) {
         throw new Error('Cannot close an already closed fridge');
@@ -115,13 +115,13 @@ export class SmartFridge {
   }
 
   handle(event: FridgeEvent) {
-    const handledEvents = Object.keys(this.preconditionByEvent);
+    const handledEvents = Object.keys(this.ensureValidStateToHandleEvent);
 
     if (!handledEvents.includes(event.name)) {
       return;
     }
 
-    this.preconditionByEvent[event.name]();
+    this.ensureValidStateToHandleEvent[event.name]();
 
     this.eventStore.push(event as SupportedEvent);
 
