@@ -56,4 +56,20 @@ describe('Removing items from a smart fridge', () => {
       );
     }
   );
+
+  describe('an item cannot be removed', () => {
+    it('if it does not exist', () => {
+      fridge = new SmartFridge([]);
+      _ = testActionsFor(fridge);
+
+      _.fridgeDoorOpened();
+
+      expect(
+        () => _.itemRemoved({ name: 'Bacon' })
+      ).toThrowError('There is no item to remove');
+
+      expect(fridge.items).toEqual([]);
+    });
+  });
+});
 });
