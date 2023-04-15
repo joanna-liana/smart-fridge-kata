@@ -6,6 +6,8 @@ import {
   FridgeDoorOpened,
   ItemAdded,
   ItemAddedPayload,
+  ItemRemoved,
+  ItemRemovedPayload,
   SmartFridge
 } from '../src/fridge/SmartFridge';
 
@@ -25,12 +27,14 @@ export interface FridgeTestActions {
   fridgeDoorOpened: () => void;
   fridgeDoorClosed: () => void;
   itemAdded: (payload: ItemAddedPayload) => void;
+  itemRemoved: (payload: ItemRemovedPayload) => void;
 }
 
 export function testActionsFor(fridge: SmartFridge) {
   return {
     fridgeDoorOpened: () => fridge.handle(FridgeDoorOpened()),
     fridgeDoorClosed: () => fridge.handle(FridgeDoorClosed()),
-    itemAdded: (payload: ItemAddedPayload) => fridge.handle(ItemAdded(payload))
+    itemAdded: (payload: ItemAddedPayload) => fridge.handle(ItemAdded(payload)),
+    itemRemoved: (payload: ItemRemovedPayload) => fridge.handle(ItemRemoved(payload))
   };
 }

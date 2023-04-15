@@ -4,8 +4,17 @@ import { OpenedSmartFridge } from './states/OpenedSmartFridge';
 
 export const DATE_FORMAT = 'dd/MM/yyyy';
 
-type FridgeEventName = 'ItemAdded' | 'FridgeDoorOpened' | 'FridgeDoorClosed';
+// TODO: move types to states or events
+type FridgeEventName = 'ItemRemoved'
+  | 'ItemAdded'
+  | 'FridgeDoorOpened'
+  | 'FridgeDoorClosed';
+
 type ItemCondition = 'sealed' | 'opened';
+
+export interface ItemRemovedPayload {
+  name: string;
+}
 
 export interface ItemAddedPayload {
   name: string;
@@ -39,6 +48,14 @@ export const ItemAdded = (
   payload: ItemAddedPayload
 ): FridgeEvent<ItemAddedPayload> => ({
   name: 'ItemAdded',
+  timestamp: new Date(),
+  payload: payload
+});
+
+export const ItemRemoved = (
+  payload: ItemRemovedPayload
+): FridgeEvent<ItemRemovedPayload> => ({
+  name: 'ItemRemoved',
   timestamp: new Date(),
   payload: payload
 });
@@ -77,6 +94,7 @@ export class SmartFridge {
         throw new Error('Cannot add an item to a closed fridge');
       }
     },
+    ItemRemoved: () => true,
     FridgeDoorOpened: () => {
       if (this.fridge instanceof OpenedSmartFridge) {
         throw new Error('Cannot open an already opened fridge');
