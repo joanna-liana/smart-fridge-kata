@@ -94,7 +94,11 @@ export class SmartFridge {
         throw new Error('Cannot add an item to a closed fridge');
       }
     },
-    ItemRemoved: () => true,
+    ItemRemoved: () => {
+      if (this.fridge instanceof ClosedSmartFridge) {
+        throw new Error('Cannot remove an item from a closed fridge');
+      }
+    },
     FridgeDoorOpened: () => {
       if (this.fridge instanceof OpenedSmartFridge) {
         throw new Error('Cannot open an already opened fridge');
