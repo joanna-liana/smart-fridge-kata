@@ -1,5 +1,5 @@
 import { SmartFridge, StoredItem } from '../src/fridge/SmartFridge';
-import { FridgeTestActions, setCurrentDate, testActionsFor } from './utils';
+import { FridgeTestActions, testActionsFor } from './utils';
 
 describe('Removing items from a smart fridge', () => {
   let fridge: SmartFridge;
@@ -35,12 +35,13 @@ describe('Removing items from a smart fridge', () => {
         'from a fridge with multiple items',
         () => {
           // given
-          setCurrentDate('16/10/2021');
           fridge = new SmartFridge([
             item('Bacon'),
             item('Milk')
           ]);
           _ = testActionsFor(fridge);
+
+          _.fridgeDoorOpened();
 
           // when
           _.itemRemoved({ name: 'Bacon' });

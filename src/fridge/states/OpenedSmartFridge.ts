@@ -1,5 +1,5 @@
 import { ISODate } from '../../ISODate';
-import { FridgeEvent, ItemAddedPayload } from '../SmartFridge';
+import { FridgeEvent, ItemAddedPayload, ItemRemovedPayload } from '../SmartFridge';
 import { ClosedSmartFridge } from './ClosedSmartFridge';
 import { SmartFridgeState } from './SmartFridgeState';
 
@@ -16,6 +16,12 @@ export class OpenedSmartFridge extends SmartFridgeState {
       this.addItem(itemAdded);
     }
 
+    if (event.name === 'ItemRemoved') {
+      const itemRemoved = event as FridgeEvent<ItemRemovedPayload>;
+
+      this.removeItem(itemRemoved);
+    }
+
     return this;
   }
 
@@ -26,5 +32,10 @@ export class OpenedSmartFridge extends SmartFridgeState {
       addedAt: itemAdded.timestamp,
       condition: itemAdded.payload.condition ?? 'sealed'
     });
+  }
+
+  private removeItem(itemRemoved: FridgeEvent<ItemRemovedPayload>) {
+    this.itemRepository = this.itemRepository
+      .filter(({ name }) => name !== itemRemoved.payload.name);
   }
 }
