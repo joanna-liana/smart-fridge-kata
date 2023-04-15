@@ -35,6 +35,13 @@ export class OpenedSmartFridge extends SmartFridgeState {
   }
 
   private removeItem(itemRemoved: FridgeEvent<ItemRemovedPayload>) {
+    const itemToRemove = this.itemRepository
+      .find(({ name }) => name === itemRemoved.payload.name);
+
+    if (!itemToRemove) {
+      throw new Error('There is no item to remove');
+    }
+
     this.itemRepository = this.itemRepository
       .filter(({ name }) => name !== itemRemoved.payload.name);
   }
