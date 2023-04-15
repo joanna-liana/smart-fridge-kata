@@ -71,5 +71,15 @@ describe('Removing items from a smart fridge', () => {
       expect(fridge.items).toEqual([]);
     });
   });
-});
+
+  it('without opening the fridge first', () => {
+    fridge = new SmartFridge([]);
+    _ = testActionsFor(fridge);
+
+    expect(
+      () => _.itemRemoved({ name: 'Bacon' })
+    ).toThrowError('Cannot remove an item from a closed fridge');
+
+    expect(fridge.items).toEqual([]);
+  });
 });
