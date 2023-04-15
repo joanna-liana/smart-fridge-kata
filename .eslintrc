@@ -25,6 +25,8 @@
     "indent": ["error", 2],
     "max-len": ["error", 80],
     "function-call-argument-newline": ["error", "consistent"],
+    "array-element-newline": ["error", "consistent"],
+    "object-curly-newline": ["error", "consistent"],
     "function-paren-newline": ["error", "multiline-arguments"],
     "no-unused-vars": "off",
     "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }]
