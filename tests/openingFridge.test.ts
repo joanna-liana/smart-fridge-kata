@@ -59,7 +59,7 @@ describe('Opening smart fridge', () => {
         }]);
       });
 
-      it('opened item - degraded by 4 hours', () => {
+      it('opened item - degraded by 5 hours', () => {
         // given
         const openedItem: StoredItem = {
           name: 'Bacon',
@@ -82,7 +82,7 @@ describe('Opening smart fridge', () => {
 
         expect(fridge.items).toEqual([{
           addedAt: '2021-10-17T22:00:00.000Z',
-          expiry: '2021-10-21T18:00:00.000Z',
+          expiry: '2021-10-21T17:00:00.000Z',
           name: 'Bacon'
         }]);
 
@@ -91,7 +91,7 @@ describe('Opening smart fridge', () => {
 
         expect(fridge.items).toEqual([{
           addedAt: '2021-10-17T22:00:00.000Z',
-          expiry: '2021-10-21T14:00:00.000Z',
+          expiry: '2021-10-21T12:00:00.000Z',
           name: 'Bacon'
         }]);
       });

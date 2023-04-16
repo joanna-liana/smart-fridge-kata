@@ -15,7 +15,7 @@ export class ClosedSmartFridge extends SmartFridgeState {
 
   private downgradeItemExpiry() {
     this.itemRepository.forEach(item => {
-      const hoursToDegradeBy = item.condition === 'sealed' ? 1 : 4;
+      const hoursToDegradeBy = item.condition === 'sealed' ? 1 : 5;
 
       item.expiry = subHours(new Date(item.expiry), hoursToDegradeBy);
     });
