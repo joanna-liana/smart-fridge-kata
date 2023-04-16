@@ -4,7 +4,7 @@ import { FridgeEvent, ItemInFridgeDto, StoredItem } from '../SmartFridge';
 export abstract class SmartFridgeState {
   constructor(
     // TODO add proper repo
-    protected itemRepository: StoredItem[] = []
+    public itemRepository: StoredItem[] = []
   ) {}
 
   get items(): ItemInFridgeDto[] {

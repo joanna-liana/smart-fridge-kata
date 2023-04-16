@@ -1,4 +1,5 @@
 
+import { isBefore } from 'date-fns';
 import { ClosedSmartFridge } from './states/ClosedSmartFridge';
 import { OpenedSmartFridge } from './states/OpenedSmartFridge';
 
@@ -82,40 +83,50 @@ export interface StoredItem {
 type SupportedEvent = FridgeEvent<ItemAddedPayload | FridgeDoorOpenedPayload>;
 
 export class SmartFridge {
-  private fridge: OpenedSmartFridge | ClosedSmartFridge;
+  private state: OpenedSmartFridge | ClosedSmartFridge;
   private readonly ensureValidStateToHandleEvent: Record<FridgeEventName, () => void> = {
     FridgeDoorClosed: () => {
-      if (this.fridge instanceof ClosedSmartFridge) {
+      if (this.state instanceof ClosedSmartFridge) {
         throw new Error('Cannot close an already closed fridge');
       }
     },
     ItemAdded: () => {
-      if (this.fridge instanceof ClosedSmartFridge) {
+      if (this.state instanceof ClosedSmartFridge) {
         throw new Error('Cannot add an item to a closed fridge');
       }
     },
     ItemRemoved: () => {
-      if (this.fridge instanceof ClosedSmartFridge) {
+      if (this.state instanceof ClosedSmartFridge) {
         throw new Error('Cannot remove an item from a closed fridge');
       }
     },
     FridgeDoorOpened: () => {
-      if (this.fridge instanceof OpenedSmartFridge) {
+      if (this.state instanceof OpenedSmartFridge) {
         throw new Error('Cannot open an already opened fridge');
       }
     }
   };
 
   constructor(
-    private readonly itemRepository: StoredItem[] = [],
+    itemRepository: StoredItem[] = [],
     // TODO: events should be immutable
     private readonly eventStore: SupportedEvent[] = [],
   ) {
-    this.fridge = new ClosedSmartFridge(this.itemRepository);
+    this.state = new ClosedSmartFridge(itemRepository);
+  }
+
+  get display(): string {
+    const sorted = this.state.itemRepository.sort((itemA, itemB) => {
+      return itemA.expiry.getTime() - itemB.expiry.getTime();
+    });
+
+    return sorted
+      .map(i => isBefore(i.expiry, new Date()) ? `EXPIRED: ${i.name}` : `${i.name}`)
+      .join("\n")
   }
 
   get items(): ItemInFridgeDto[] {
-    return this.fridge.items;
+    return this.state.items;
   }
 
   handle(event: FridgeEvent) {
@@ -129,6 +140,6 @@ export class SmartFridge {
 
     this.eventStore.push(event as SupportedEvent);
 
-    this.fridge = this.fridge.handle(event);
+    this.state = this.state.handle(event);
   }
 }
