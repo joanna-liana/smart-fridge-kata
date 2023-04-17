@@ -116,17 +116,18 @@ export class SmartFridge {
   }
 
   get display(): string {
-    const sortedItems = this.state.itemRepository.sort((itemA, itemB) => {
+    const itemsExpiringFirst = this.state.itemRepository.sort((itemA, itemB) => {
       return itemA.expiry.getTime() - itemB.expiry.getTime();
     });
 
-    return sortedItems
+    return itemsExpiringFirst
       .map(({ expiry, name }) => {
-        const daysLeft = `${i.name}: ${differenceInDays(i.expiry, new Date())} days remaining`;
+        const daysLeft = `${name}: ${differenceInDays(expiry, new Date())} days remaining`;
 
-        const hasExpired = isBefore(i.expiry, new Date());
+        // TODO: move to item?
+        const hasExpired = isBefore(expiry, new Date());
 
-        return hasExpired ? `EXPIRED: ${i.name}` : daysLeft;
+        return hasExpired ? `EXPIRED: ${name}` : daysLeft;
       })
       .join("\n")
   }
