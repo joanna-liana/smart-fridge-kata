@@ -34,8 +34,8 @@ describe('Displaying the status of the items stored in a smart fridge', () => {
   describe("shows the days left until an item's expiry", () => {
     describe("0 days for items expiring on the same day", () => {
       it.each([
-        ["1 hour left", new Date(2021, 1, 2, 1)],
-        ["23 hours left", new Date(2021, 1, 2, 23)],
+        ["1 hour left", new Date(2021, 1, 1, 1)],
+        ["23 hours left", new Date(2021, 1, 1, 23, 59, 59)],
       ])('%s', (_scenario, expiry) => {
         fridge = new SmartFridge([
           item("Milk", expiry)
