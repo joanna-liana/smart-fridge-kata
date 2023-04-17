@@ -1,5 +1,5 @@
 
-import { isBefore } from 'date-fns';
+import { differenceInDays, isBefore } from 'date-fns';
 import { ClosedSmartFridge } from './states/ClosedSmartFridge';
 import { OpenedSmartFridge } from './states/OpenedSmartFridge';
 
@@ -116,12 +116,18 @@ export class SmartFridge {
   }
 
   get display(): string {
-    const sorted = this.state.itemRepository.sort((itemA, itemB) => {
+    const sortedItems = this.state.itemRepository.sort((itemA, itemB) => {
       return itemA.expiry.getTime() - itemB.expiry.getTime();
     });
 
-    return sorted
-      .map(i => isBefore(i.expiry, new Date()) ? `EXPIRED: ${i.name}` : `${i.name}`)
+    return sortedItems
+      .map(({ expiry, name }) => {
+        const daysLeft = `${i.name}: ${differenceInDays(i.expiry, new Date())} days remaining`;
+
+        const hasExpired = isBefore(i.expiry, new Date());
+
+        return hasExpired ? `EXPIRED: ${i.name}` : daysLeft;
+      })
       .join("\n")
   }
 
