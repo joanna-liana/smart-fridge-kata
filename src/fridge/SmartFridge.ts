@@ -80,6 +80,28 @@ export interface StoredItem {
   condition: ItemCondition;
 }
 
+class DisplayedItem {
+  constructor(
+    private readonly expiry: Date,
+    public readonly name: string,
+  ) {}
+
+  static from(storedItem: StoredItem): DisplayedItem {
+    return new DisplayedItem(
+      storedItem.expiry,
+      storedItem.name
+    );
+  }
+
+  get hasExpired() {
+    return isBefore(this.expiry, new Date());
+  }
+
+  get daysUntilExpiry() {
+    return differenceInDays(this.expiry, new Date());
+  }
+}
+
 type SupportedEvent = FridgeEvent<ItemAddedPayload | FridgeDoorOpenedPayload>;
 
 export class SmartFridge {
@@ -116,18 +138,17 @@ export class SmartFridge {
   }
 
   get display(): string {
-    const itemsExpiringFirst = this.state.itemRepository.sort((itemA, itemB) => {
-      return itemA.expiry.getTime() - itemB.expiry.getTime();
-    });
+    const itemsExpiringFirst = this.state.itemRepository
+      .sort((itemA, itemB) => {
+        return itemA.expiry.getTime() - itemB.expiry.getTime();
+      })
+      .map(item => DisplayedItem.from(item));
 
     return itemsExpiringFirst
-      .map(({ expiry, name }) => {
-        const daysLeft = `${name}: ${differenceInDays(expiry, new Date())} days remaining`;
-
-        // TODO: move to item?
-        const hasExpired = isBefore(expiry, new Date());
-
-        return hasExpired ? `EXPIRED: ${name}` : daysLeft;
+      .map((item) => {
+        return item.hasExpired ?
+          `EXPIRED: ${item.name}` :
+          `${item.name}: ${item.daysUntilExpiry} days remaining`;
       })
       .join("\n")
   }
