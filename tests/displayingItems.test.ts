@@ -13,6 +13,7 @@ describe('Displaying the status of the items stored in a smart fridge', () => {
   })
 
   beforeEach(() => {
+    jest.useFakeTimers();
     setCurrentDate('01/02/2021');
   })
 
